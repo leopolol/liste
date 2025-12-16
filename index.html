@@ -8,46 +8,43 @@
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900">
-  <!-- App shell -->
   <div class="max-w-3xl mx-auto px-4 py-6">
     <!-- Header -->
     <header class="mb-6">
       <div class="flex items-start justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight">Listes partagées</h1>
+        <div class="min-w-0">
+          <h1 class="text-2xl font-bold tracking-tight truncate">Listes partagées</h1>
           <p class="text-slate-600 mt-1 text-sm">
-            Crée une liste, partage le lien, attribuez les items en 2 clics.
+            Ultra simple : créer → partager → réserver / attribuer.
           </p>
         </div>
 
-        <div class="flex gap-2">
-          <button id="btnShareTop" class="hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50">
+        <div class="flex gap-2 shrink-0">
+          <button id="btnShareTop" class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
             Partager
           </button>
-          <button id="btnAdminTop" class="hidden rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50">
+          <button id="btnEditToggleTop" class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
             Mode édition
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Create panel -->
+    <!-- Create -->
     <section id="createPanel" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
       <h2 class="text-lg font-semibold">Créer une nouvelle liste</h2>
-      <p class="text-sm text-slate-600 mt-1">
-        Choisis un template : les champs, statuts et suggestions s’adaptent automatiquement.
-      </p>
+      <p class="text-sm text-slate-600 mt-1">Choisis un template : champs & statuts adaptés.</p>
 
       <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-sm font-medium text-slate-700">Titre</label>
-          <input id="inpListTitle" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                 placeholder="Ex: Noël 2025 / Roadtrip Espagne / Repas chez Paul" />
+          <input id="inpListTitle" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="Ex: Noël 2025 / Repas samedi / Roadtrip Espagne">
         </div>
 
         <div>
-          <label class="text-sm font-medium text-slate-700">Type de liste</label>
-          <select id="selListType" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+          <label class="text-sm font-medium text-slate-700">Type</label>
+          <select id="selListType" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
             <option value="cadeaux">🎁 Cadeaux</option>
             <option value="courses">🛒 Courses / Achats</option>
             <option value="voyage">🧳 Voyage (checklist)</option>
@@ -58,48 +55,56 @@
 
         <div>
           <label class="text-sm font-medium text-slate-700">Code admin (obligatoire)</label>
-          <input id="inpAdminCode" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                 placeholder="Garde-le, il active l’édition" />
+          <input id="inpAdminCode" type="password" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="Active le mode édition">
         </div>
 
         <div>
           <label class="text-sm font-medium text-slate-700">Code d’accès (optionnel)</label>
-          <input id="inpAccessCode" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                 placeholder="Si tu veux protéger la consultation" />
+          <input id="inpAccessCode" type="password" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="Protège la liste si besoin">
+        </div>
+
+        <div id="createGiftExtras" class="md:col-span-2 hidden">
+          <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input id="chkSurpriseDefault" type="checkbox" class="rounded border-slate-300" checked>
+            Activer le mode surprise (Cadeaux) : le nom du réservant est caché aux invités
+          </label>
         </div>
       </div>
 
       <div class="mt-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
         <div class="text-xs text-slate-500">
-          Le lien partagé contient l’ID de la liste. Les codes sont stockés <span class="font-semibold">hachés</span> (SHA-256).
+          Les codes sont stockés <span class="font-semibold">hachés</span> (SHA-256). Le lien contient l’ID de la liste.
         </div>
-        <button id="btnCreateList"
-                class="rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800">
+        <button id="btnCreateList" class="rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800">
           Créer la liste
         </button>
       </div>
     </section>
 
-    <!-- List panel -->
+    <!-- List -->
     <section id="listPanel" class="hidden mt-6 space-y-4">
-      <!-- List meta -->
+      <!-- Meta -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <h2 id="txtListTitle" class="text-xl font-bold truncate"></h2>
-              <span id="badgeType" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700"></span>
-              <span id="badgeAccess" class="hidden inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+              <span id="badgeType" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700"></span>
+              <span id="badgeAccess" class="hidden inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
                 🔒 Protégée
               </span>
-              <span id="badgeAdmin" class="hidden inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+              <span id="badgeEdit" class="hidden inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                 ✏️ Édition
               </span>
+              <span id="badgeSurprise" class="hidden inline-flex items-center rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2.5 py-1 text-xs font-semibold text-fuchsia-800">
+                🎁 Surprise
+              </span>
             </div>
-
             <p id="txtListHint" class="text-sm text-slate-600 mt-2"></p>
 
-            <!-- Counters -->
+            <!-- KPIs -->
             <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
               <div class="rounded-xl border border-slate-200 bg-white p-3">
                 <div class="text-xs text-slate-500">Total</div>
@@ -120,13 +125,11 @@
             </div>
           </div>
 
-          <div class="flex gap-2">
-            <button id="btnShare"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+          <div class="flex gap-2 shrink-0">
+            <button id="btnShare" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
               Partager
             </button>
-            <button id="btnAddSuggested"
-                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+            <button id="btnSuggested" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
               + Suggestions
             </button>
           </div>
@@ -134,54 +137,73 @@
       </div>
 
       <!-- Controls -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-3">
         <div class="flex flex-col md:flex-row gap-3 md:items-end md:justify-between">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
             <div>
-              <label class="text-sm font-medium text-slate-700">Recherche</label>
-              <input id="inpSearch" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                     placeholder="Ex: chaussettes / passeport / coca…" />
+              <label class="text-sm font-medium text-slate-700">Mon nom (réservations)</label>
+              <input id="inpMyName" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                     placeholder="Ex: Paul">
+              <div class="text-xs text-slate-500 mt-1">Utilisé pour “Réservé par…”.</div>
             </div>
             <div>
               <label class="text-sm font-medium text-slate-700">Catégorie</label>
-              <select id="selCategory" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+              <select id="selCategory" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
                 <option value="">Toutes</option>
               </select>
             </div>
             <div>
               <label class="text-sm font-medium text-slate-700">Statut</label>
-              <select id="selStatus" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+              <select id="selStatus" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
                 <option value="">Tous</option>
               </select>
             </div>
           </div>
 
           <div class="flex gap-2">
-            <button id="btnAddItem"
-                    class="rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800">
+            <button id="btnAddQuick" class="rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-800">
               + Ajouter
             </button>
-            <button id="btnResetFilters"
-                    class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">
-              Réinitialiser
+            <button id="btnEditToggle" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">
+              Mode édition
             </button>
           </div>
         </div>
+
+        <!-- Quick add -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <label class="text-sm font-semibold text-slate-700">Ajout rapide</label>
+          <div class="mt-2 flex gap-2">
+            <input id="inpQuickAdd" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                   placeholder="Tape un item puis Entrée (ex: Coca, Passeport, Montre...)">
+            <button id="btnQuickAddGo" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+              Ajouter
+            </button>
+          </div>
+          <div class="text-xs text-slate-500 mt-2">En mode vision, l’ajout est désactivé.</div>
+        </div>
+
+        <!-- Search -->
+        <div>
+          <label class="text-sm font-medium text-slate-700">Recherche</label>
+          <input id="inpSearch" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="Rechercher dans le titre / notes / catégorie…">
+        </div>
       </div>
 
-      <!-- Items list -->
-      <div class="space-y-2" id="itemsContainer"></div>
+      <!-- Items -->
+      <div id="itemsContainer" class="space-y-2"></div>
 
-      <!-- Footer hint -->
       <div class="text-xs text-slate-500 text-center">
-        Astuce : le prénom est mémorisé sur cet appareil pour accélérer la réservation.
+        Mode vision : réservation uniquement. Mode édition : ajout / modification / suppression.
       </div>
     </section>
   </div>
 
   <!-- Modal -->
   <div id="modalWrap" class="hidden fixed inset-0 bg-black/40 p-4 z-50">
-    <div class="max-w-xl mx-auto mt-10 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+         style="margin-top: min(10vh, 64px);">
       <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
         <div>
           <h3 id="modalTitle" class="font-semibold"></h3>
@@ -190,7 +212,8 @@
         <button id="btnCloseModal" class="rounded-lg px-2 py-1 hover:bg-slate-100">✕</button>
       </div>
 
-      <div class="p-5" id="modalBody"></div>
+      <!-- IMPORTANT: scrollable body to fix “slide” issues -->
+      <div id="modalBody" class="p-5 overflow-y-auto" style="max-height: 70vh;"></div>
 
       <div class="px-5 py-4 border-t border-slate-200 flex items-center justify-end gap-2">
         <button id="btnModalSecondary" class="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50"></button>
@@ -200,13 +223,13 @@
   </div>
 
 <script type="module">
-  /* ===================== Firebase ===================== */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
     getFirestore, collection, addDoc, doc, getDoc, updateDoc, deleteDoc,
     onSnapshot, query, orderBy, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+  /* Firebase (nouveau projet) */
   const firebaseConfig = {
     apiKey: "AIzaSyDdbriBVb8NR-VsZcKHzSeJ8xBwWSMZNps",
     authDomain: "liste-de-noel-8c5e0.firebaseapp.com",
@@ -215,171 +238,101 @@
     messagingSenderId: "1061968081588",
     appId: "1:1061968081588:web:bb1f3cfdcd340c66de5de1"
   };
-
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  /* ===================== Templates ===================== */
+  /* Templates */
   const TEMPLATES = {
     cadeaux: {
       label: "🎁 Cadeaux",
-      hint: "Réservez un cadeau pour éviter les doublons. Lien + variante comme sur ta liste Noël.",
+      hint: "Comme ta liste Noël : lien, variante, image, réservation pour éviter les doublons.",
       statuses: [
         { key: "disponible", label: "Disponible" },
         { key: "reserve", label: "Réservé" },
-        { key: "offert", label: "Offert" },
+        { key: "offert", label: "Offert" }
       ],
       categories: ["Général", "Vêtements", "Tech", "Sport", "Maison", "Expérience", "Autre"],
-      fields: {
-        qty: false,
-        link: true,
-        variant: true,
-        price: true,
-        notes: true,
-        category: true
-      },
+      fields: { category: true, qty: false, unit: false, link: true, image: true, variant: true, price: true, notes: true },
       cta: { take: "Réserver", done: "Offert" },
       suggested: [
         { title: "Idée cadeau (à compléter)", category: "Général" },
-        { title: "Chaussettes / vêtements", category: "Vêtements" },
+        { title: "Vêtement / Accessoire", category: "Vêtements" },
         { title: "Gadget utile", category: "Tech" },
-        { title: "Livre / expérience", category: "Expérience" },
+        { title: "Expérience (resto / activité)", category: "Expérience" }
       ]
     },
-
     courses: {
       label: "🛒 Courses / Achats",
-      hint: "Liste d’achats partagée : on se répartit qui achète quoi, avec quantités.",
+      hint: "Répartition des achats : quantité + “Je l’achète”.",
       statuses: [
         { key: "a_acheter", label: "À acheter" },
-        { key: "achete", label: "Acheté" },
+        { key: "achete", label: "Acheté" }
       ],
       categories: ["Alimentaire", "Hygiène", "Maison", "Boissons", "Fournitures", "Autre"],
-      fields: {
-        qty: true,
-        link: false,
-        variant: false,
-        price: false,
-        notes: true,
-        category: true
-      },
+      fields: { category: true, qty: true, unit: true, link: false, image: false, variant: false, price: false, notes: true },
       cta: { take: "Je l’achète", done: "Acheté" },
       suggested: [
         { title: "Eau", category: "Boissons", qty: 1, unit: "pack" },
-        { title: "Pâtes", category: "Alimentaire", qty: 1, unit: "paquet" },
-        { title: "Papier toilette", category: "Hygiène", qty: 1, unit: "pack" },
-        { title: "Liquide vaisselle", category: "Maison", qty: 1, unit: "flacon" },
+        { title: "Pâtes", category: "Alimentaire", qty: 2, unit: "paquets" },
+        { title: "Papier toilette", category: "Hygiène", qty: 1, unit: "pack" }
       ]
     },
-
     voyage: {
-      label: "🧳 Voyage (checklist)",
-      hint: "Checklist perso : coche ce qui est prêt. Idéal documents / vêtements / tech.",
+      label: "🧳 Voyage",
+      hint: "Checklist : documents, vêtements, tech. Coche “Prêt”.",
       statuses: [
         { key: "a_preparer", label: "À préparer" },
-        { key: "pret", label: "Prêt" },
+        { key: "pret", label: "Prêt" }
       ],
       categories: ["Documents", "Santé", "Vêtements", "Toilettes", "Tech", "Divers"],
-      fields: {
-        qty: true,
-        link: false,
-        variant: false,
-        price: false,
-        notes: true,
-        category: true
-      },
+      fields: { category: true, qty: true, unit: true, link: false, image: false, variant: false, price: false, notes: true },
       cta: { take: "Je m’en occupe", done: "Prêt" },
       suggested: [
-        { title: "Carte d’identité / Passeport", category: "Documents", qty: 1, unit: "pc" },
+        { title: "Passeport / CNI", category: "Documents", qty: 1, unit: "pc" },
         { title: "Chargeur téléphone", category: "Tech", qty: 1, unit: "pc" },
-        { title: "T-shirts", category: "Vêtements", qty: 5, unit: "pcs" },
-        { title: "Trousse de toilette", category: "Toilettes", qty: 1, unit: "pc" },
+        { title: "T-shirts", category: "Vêtements", qty: 5, unit: "pcs" }
       ]
     },
-
     roadtrip: {
       label: "🚗 Roadtrip",
-      hint: "Répartition logistique : qui prend quoi + statut “dans la voiture”.",
+      hint: "Logistique : qui prend quoi + statut final “Dans la voiture”.",
       statuses: [
         { key: "a_prevoir", label: "À prévoir" },
         { key: "attribue", label: "Attribué" },
-        { key: "dans_voiture", label: "Dans la voiture" },
+        { key: "dans_voiture", label: "Dans la voiture" }
       ],
       categories: ["Voiture", "Camping", "Cuisine", "Sécurité", "Tech", "Divers"],
-      fields: {
-        qty: true,
-        link: false,
-        variant: false,
-        price: false,
-        notes: true,
-        category: true
-      },
+      fields: { category: true, qty: true, unit: true, link: false, image: false, variant: false, price: false, notes: true },
       cta: { take: "Je prends", done: "Dans la voiture" },
       suggested: [
         { title: "Trousse de secours", category: "Sécurité", qty: 1, unit: "pc" },
         { title: "Lampe frontale", category: "Camping", qty: 1, unit: "pc" },
-        { title: "Câbles / chargeurs", category: "Tech", qty: 1, unit: "lot" },
-        { title: "Glacière", category: "Cuisine", qty: 1, unit: "pc" },
+        { title: "Glacière", category: "Cuisine", qty: 1, unit: "pc" }
       ]
     },
-
     repas: {
-      label: "🍽️ Repas “qui ramène quoi”",
-      hint: "Chacun s’attribue un item : entrée / plat / dessert / boissons, etc.",
+      label: "🍽️ Repas",
+      hint: "Chacun s’attribue un item : “Je ramène” puis “Apporté”.",
       statuses: [
         { key: "a_apporter", label: "À apporter" },
         { key: "confirme", label: "Confirmé" },
-        { key: "apporte", label: "Apporté" },
+        { key: "apporte", label: "Apporté" }
       ],
       categories: ["Entrées", "Plats", "Desserts", "Boissons", "Pain / Glace / Divers"],
-      fields: {
-        qty: true,
-        link: false,
-        variant: false,
-        price: false,
-        notes: true,
-        category: true
-      },
+      fields: { category: true, qty: true, unit: true, link: false, image: false, variant: false, price: false, notes: true },
       cta: { take: "Je ramène", done: "Apporté" },
       suggested: [
         { title: "Boissons", category: "Boissons", qty: 2, unit: "bouteilles" },
         { title: "Dessert", category: "Desserts", qty: 1, unit: "pc" },
-        { title: "Pain", category: "Pain / Glace / Divers", qty: 2, unit: "baguettes" },
-        { title: "Glaçons", category: "Pain / Glace / Divers", qty: 1, unit: "sachet" },
+        { title: "Pain", category: "Pain / Glace / Divers", qty: 2, unit: "baguettes" }
       ]
-    },
+    }
   };
 
-  /* ===================== DOM ===================== */
+  /* DOM helpers */
   const $ = (id) => document.getElementById(id);
 
-  const createPanel = $("createPanel");
-  const listPanel = $("listPanel");
-
-  const btnShare = $("btnShare");
-  const btnShareTop = $("btnShareTop");
-  const btnAdminTop = $("btnAdminTop");
-  const btnAddItem = $("btnAddItem");
-  const btnAddSuggested = $("btnAddSuggested");
-  const btnResetFilters = $("btnResetFilters");
-
-  const txtListTitle = $("txtListTitle");
-  const badgeType = $("badgeType");
-  const badgeAccess = $("badgeAccess");
-  const badgeAdmin = $("badgeAdmin");
-  const txtListHint = $("txtListHint");
-
-  const inpSearch = $("inpSearch");
-  const selCategory = $("selCategory");
-  const selStatus = $("selStatus");
-  const itemsContainer = $("itemsContainer");
-
-  const kpiTotal = $("kpiTotal");
-  const kpiAssigned = $("kpiAssigned");
-  const kpiDone = $("kpiDone");
-  const kpiLeft = $("kpiLeft");
-
-  // Modal
+  /* Modal */
   const modalWrap = $("modalWrap");
   const modalTitle = $("modalTitle");
   const modalSubtitle = $("modalSubtitle");
@@ -388,22 +341,13 @@
   const btnModalPrimary = $("btnModalPrimary");
   const btnModalSecondary = $("btnModalSecondary");
 
-  /* ===================== Helpers ===================== */
-  async function sha256(text) {
-    const buf = new TextEncoder().encode(text);
-    const hash = await crypto.subtle.digest("SHA-256", buf);
-    return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
-  }
-
   function showModal({ title, subtitle, bodyHtml, primaryText, onPrimary, secondaryText, onSecondary }) {
     modalTitle.textContent = title || "";
     modalSubtitle.textContent = subtitle || "";
     modalBody.innerHTML = bodyHtml || "";
 
     btnModalPrimary.textContent = primaryText || "OK";
-    btnModalPrimary.onclick = async () => {
-      try { await onPrimary?.(); } finally { /* keep modal close managed by action */ }
-    };
+    btnModalPrimary.onclick = async () => { await onPrimary?.(); };
 
     if (secondaryText) {
       btnModalSecondary.classList.remove("hidden");
@@ -416,40 +360,22 @@
 
     modalWrap.classList.remove("hidden");
   }
-
   function closeModal() { modalWrap.classList.add("hidden"); }
   btnCloseModal.onclick = closeModal;
   modalWrap.addEventListener("click", (e) => { if (e.target === modalWrap) closeModal(); });
 
+  /* Utils */
   function escapeHtml(str) {
     return String(str ?? "")
       .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
-
-  function fmtQty(item) {
-    const q = item.qty;
-    const u = item.unit;
-    if (!q && q !== 0) return "";
-    if (!u) return `• ${q}`;
-    return `• ${q} ${u}`;
+  async function sha256(text) {
+    const buf = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
   }
-
-  function copyToClipboard(text) {
-    return navigator.clipboard.writeText(text);
-  }
-
-  function getOrAskUserName() {
-    let name = localStorage.getItem("liste_user_name") || "";
-    if (!name) {
-      name = prompt("Ton prénom (pour l’attribution) :") || "";
-      name = name.trim();
-      if (name) localStorage.setItem("liste_user_name", name);
-    }
-    return name;
-  }
-
   function setSelectOptions(selectEl, values, firstLabel) {
     selectEl.innerHTML = "";
     const opt0 = document.createElement("option");
@@ -463,32 +389,66 @@
       selectEl.appendChild(opt);
     }
   }
-
-  function templateStatusLabels(tpl) {
-    return Object.fromEntries(tpl.statuses.map(s => [s.key, s.label]));
-  }
-
   function statusClass(key) {
-    // visual badge for status
-    if (key.includes("done") || key === "offert" || key === "achete" || key === "pret" || key === "dans_voiture" || key === "apporte") {
-      return "border-emerald-200 bg-emerald-50 text-emerald-800";
-    }
-    if (key.includes("reserve") || key.includes("attribue") || key.includes("confirme")) {
-      return "border-amber-200 bg-amber-50 text-amber-800";
-    }
+    if (["offert","achete","pret","dans_voiture","apporte"].includes(key)) return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    if (["reserve","attribue","confirme"].includes(key)) return "border-amber-200 bg-amber-50 text-amber-800";
     return "border-slate-200 bg-slate-50 text-slate-700";
   }
+  function parseMaybeNumber(v) {
+    const s = (v ?? "").toString().trim().replace(",", ".");
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
 
-  /* ===================== State ===================== */
+  /* Share (reliable) */
+  async function shareLink(listId) {
+    const link = `${location.origin}${location.pathname}?list=${listId}`;
+    const text = `Liste: ${link}`;
+
+    // 1) Web Share API (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Liste partagée", text, url: link });
+        return;
+      } catch (_) {}
+    }
+
+    // 2) Clipboard (requires https in most browsers)
+    if (navigator.clipboard && location.protocol === "https:") {
+      try {
+        await navigator.clipboard.writeText(link);
+        alert("Lien copié.");
+        return;
+      } catch (_) {}
+    }
+
+    // 3) Fallback manual copy
+    prompt("Copie ce lien :", link);
+  }
+
+  /* App state */
   const url = new URL(location.href);
   const listId = url.searchParams.get("list");
-  let currentList = null;        // {title,type,adminHash,accessHash,...}
-  let currentTemplate = null;
-  let isAdmin = false;
-  let items = [];                // local cache
-  let unsubItems = null;
 
-  /* ===================== Create list ===================== */
+  let currentList = null;        // {id,title,type,adminHash,accessHash,surprise,...}
+  let tpl = null;
+  let isAdmin = false;
+  let items = [];
+  let unsub = null;
+
+  /* Create panel: show surprise checkbox only for gifts */
+  const selListType = $("selListType");
+  const createGiftExtras = $("createGiftExtras");
+  function refreshCreateTypeUI() {
+    const v = selListType.value;
+    if (v === "cadeaux") createGiftExtras.classList.remove("hidden");
+    else createGiftExtras.classList.add("hidden");
+  }
+  selListType.addEventListener("change", refreshCreateTypeUI);
+  refreshCreateTypeUI();
+
+  /* Create list */
   $("btnCreateList").onclick = async () => {
     const title = $("inpListTitle").value.trim();
     const type = $("selListType").value;
@@ -501,354 +461,323 @@
     const adminHash = await sha256(adminCode);
     const accessHash = accessCode ? await sha256(accessCode) : null;
 
+    const surprise = (type === "cadeaux") ? $("chkSurpriseDefault").checked : false;
+
     const ref = await addDoc(collection(db, "lists"), {
       title,
       type,
       adminHash,
       accessHash,
+      surprise,         // IMPORTANT: hide reserved names for non-admin on gifts
       createdAt: serverTimestamp(),
-      version: 1
+      version: 2
     });
 
-    // Redirect to list
     location.href = `${location.pathname}?list=${ref.id}`;
   };
 
-  /* ===================== Load list flow ===================== */
-  async function loadList() {
-    if (!listId) return;
+  /* Name selection */
+  const NAME_KEY = "liste_user_name";
+  function initNameField() {
+    const v = localStorage.getItem(NAME_KEY) || "";
+    $("inpMyName").value = v;
+    $("inpMyName").addEventListener("input", () => {
+      localStorage.setItem(NAME_KEY, $("inpMyName").value.trim());
+    });
+  }
 
-    // Switch UI
-    createPanel.classList.add("hidden");
-    listPanel.classList.remove("hidden");
-    btnShareTop.classList.remove("hidden");
-    btnAdminTop.classList.remove("hidden");
+  /* Edit toggle */
+  async function toggleEditMode() {
+    if (!currentList) return;
 
-    // Fetch list doc
-    const ref = doc(db, "lists", listId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      alert("Liste introuvable.");
-      location.href = location.pathname;
+    if (isAdmin) {
+      isAdmin = false;
+      $("badgeEdit").classList.add("hidden");
+      $("btnEditToggle").textContent = "Mode édition";
+      $("btnEditToggleTop").textContent = "Mode édition";
+      renderAll();
       return;
     }
 
-    currentList = { id: listId, ...snap.data() };
-    currentTemplate = TEMPLATES[currentList.type] || TEMPLATES.cadeaux;
-
-    // Render meta
-    txtListTitle.textContent = currentList.title;
-    badgeType.textContent = currentTemplate.label;
-    txtListHint.textContent = currentTemplate.hint;
-
-    if (currentList.accessHash) badgeAccess.classList.remove("hidden");
-
-    // Access gate
-    if (currentList.accessHash) {
-      const code = prompt("Code d’accès requis :");
-      if (!code) { location.href = location.pathname; return; }
-      const h = await sha256(code.trim());
-      if (h !== currentList.accessHash) {
-        alert("Code incorrect.");
-        location.href = location.pathname;
-        return;
-      }
-    }
-
-    // Prepare filters
-    setSelectOptions(selCategory, currentTemplate.categories, "Toutes");
-    setSelectOptions(selStatus, currentTemplate.statuses.map(s => s.key), "Tous");
-
-    // Share buttons
-    const share = async () => {
-      const link = `${location.origin}${location.pathname}?list=${listId}`;
-      await copyToClipboard(`${link}\nID: ${listId}`);
-      alert("Lien copié.");
-    };
-    btnShare.onclick = share;
-    btnShareTop.onclick = share;
-
-    // Admin enable button
-    btnAdminTop.onclick = async () => { await openAdminModal(); };
-
-    // Subscribe items
-    if (unsubItems) unsubItems();
-    const itemsRef = collection(db, "lists", listId, "items");
-    const q = query(itemsRef, orderBy("createdAt", "asc"));
-    unsubItems = onSnapshot(q, (qs) => {
-      items = qs.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderAll();
-    });
-
-    // Actions
-    btnAddItem.onclick = () => openItemModal({ mode: "create" });
-    btnAddSuggested.onclick = () => openSuggestedModal();
-    btnResetFilters.onclick = () => {
-      inpSearch.value = "";
-      selCategory.value = "";
-      selStatus.value = "";
-      renderItems();
-    };
-
-    inpSearch.addEventListener("input", () => renderItems());
-    selCategory.addEventListener("change", () => renderItems());
-    selStatus.addEventListener("change", () => renderItems());
-  }
-
-  /* ===================== Admin ===================== */
-  async function openAdminModal() {
     showModal({
-      title: "Mode édition",
-      subtitle: "Saisis le code admin pour activer l’ajout / suppression / édition complète.",
+      title: "Activer le mode édition",
+      subtitle: "Saisis le code admin. En mode vision, personne ne peut ajouter/supprimer.",
       bodyHtml: `
         <label class="text-sm font-medium text-slate-700">Code admin</label>
-        <input id="mAdminCode" type="password" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Code admin" />
-        <div class="mt-3 text-xs text-slate-500">
-          Conseil : active l’édition uniquement sur ton appareil.
-        </div>
+        <input id="mAdmin" type="password" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Code admin">
       `,
       primaryText: "Activer",
-      secondaryText: isAdmin ? "Désactiver" : null,
-      onSecondary: () => {
-        isAdmin = false;
-        badgeAdmin.classList.add("hidden");
-        alert("Mode édition désactivé.");
-        closeModal();
-        renderItems();
-      },
+      secondaryText: "Annuler",
+      onSecondary: () => closeModal(),
       onPrimary: async () => {
-        const code = (document.getElementById("mAdminCode").value || "").trim();
+        const code = (document.getElementById("mAdmin").value || "").trim();
         if (!code) return alert("Code requis.");
         const h = await sha256(code);
         if (h !== currentList.adminHash) return alert("Code incorrect.");
 
         isAdmin = true;
-        badgeAdmin.classList.remove("hidden");
+        $("badgeEdit").classList.remove("hidden");
+        $("btnEditToggle").textContent = "Quitter édition";
+        $("btnEditToggleTop").textContent = "Quitter édition";
         closeModal();
-        renderItems();
+        renderAll();
       }
     });
   }
 
-  /* ===================== Modals ===================== */
-  function openSuggestedModal() {
-    const sug = currentTemplate.suggested || [];
-    if (!sug.length) return alert("Aucune suggestion pour ce template.");
+  /* Admin settings (surprise toggle for gifts) */
+  async function openAdminSettings() {
+    if (!isAdmin) return alert("Réservé au mode édition.");
 
-    const rows = sug.map((s, i) => {
-      const t = escapeHtml(s.title);
-      const c = escapeHtml(s.category || "");
-      const q = s.qty != null ? `${s.qty} ${escapeHtml(s.unit || "")}` : "";
-      return `
-        <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-xl p-3">
-          <div class="min-w-0">
-            <div class="font-medium truncate">${t}</div>
-            <div class="text-xs text-slate-500">${c}${q ? " • " + escapeHtml(q) : ""}</div>
-          </div>
-          <button data-i="${i}" class="btnAddSug rounded-lg bg-slate-900 text-white px-3 py-2 text-sm font-semibold hover:bg-slate-800">
-            Ajouter
-          </button>
-        </div>
-      `;
-    }).join("");
-
+    const checked = !!currentList.surprise;
     showModal({
-      title: "Suggestions du template",
-      subtitle: "Ajoute des items fréquents en 1 clic.",
-      bodyHtml: `<div class="space-y-2">${rows}</div>`,
-      primaryText: "Fermer",
-      onPrimary: () => { closeModal(); }
+      title: "Réglages (admin)",
+      subtitle: "Options de la liste.",
+      bodyHtml: `
+        <div class="space-y-3">
+          <div class="rounded-xl border border-slate-200 p-3">
+            <div class="font-semibold">Template : ${escapeHtml(TEMPLATES[currentList.type]?.label || currentList.type)}</div>
+            <div class="text-xs text-slate-500 mt-1">ID : ${escapeHtml(currentList.id)}</div>
+          </div>
+
+          ${currentList.type === "cadeaux" ? `
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+              <input id="mSurprise" type="checkbox" class="rounded border-slate-300" ${checked ? "checked" : ""}>
+              Mode surprise : cacher le nom du réservant aux invités
+            </label>
+            <div class="text-xs text-slate-500">L’admin voit toujours les noms.</div>
+          ` : `
+            <div class="text-sm text-slate-600">Aucun réglage spécifique pour ce type.</div>
+          `}
+        </div>
+      `,
+      primaryText: "Enregistrer",
+      secondaryText: "Fermer",
+      onSecondary: () => closeModal(),
+      onPrimary: async () => {
+        if (currentList.type === "cadeaux") {
+          const v = !!document.getElementById("mSurprise")?.checked;
+          await updateDoc(doc(db, "lists", currentList.id), { surprise: v });
+          currentList.surprise = v;
+          closeModal();
+          renderMetaBadges();
+          renderItems();
+        } else {
+          closeModal();
+        }
+      }
+    });
+  }
+
+  /* Item creation: guided modal */
+  function openItemCreateModal(prefill = {}) {
+    if (!isAdmin) return alert("Ajout réservé au mode édition.");
+
+    const statusOptions = tpl.statuses.map(s => `<option value="${s.key}">${escapeHtml(s.label)}</option>`).join("");
+    const catOptions = tpl.categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+    const v = prefill || {};
+    showModal({
+      title: "Ajouter un item",
+      subtitle: "Les champs s’adaptent au template.",
+      bodyHtml: `
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm font-medium text-slate-700">Nom</label>
+            <input id="mTitle" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ex: Montre / Coca / Passeport" value="${escapeHtml(v.title || "")}">
+          </div>
+
+          ${tpl.fields.category ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Catégorie</label>
+              <select id="mCategory" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+                ${catOptions}
+              </select>
+            </div>` : ""}
+
+          ${tpl.fields.qty ? `
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-sm font-medium text-slate-700">Quantité</label>
+                <input id="mQty" inputmode="decimal" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ex: 2" value="${v.qty ?? ""}">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-700">Unité</label>
+                <input id="mUnit" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ex: bouteilles / pcs / pack" value="${escapeHtml(v.unit || "")}">
+              </div>
+            </div>` : ""}
+
+          ${tpl.fields.link ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Lien produit</label>
+              <input id="mLink" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="https://..." value="${escapeHtml(v.link || "")}">
+            </div>` : ""}
+
+          ${tpl.fields.image ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Image (URL)</label>
+              <input id="mImage" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="https://...jpg/png/webp" value="${escapeHtml(v.imageUrl || "")}">
+              <div class="text-xs text-slate-500 mt-1">Optionnel. Affiche un aperçu sur la carte.</div>
+            </div>` : ""}
+
+          ${tpl.fields.variant ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Variante (couleur / taille / modèle)</label>
+              <input id="mVariant" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ex: Noir / M / Pro" value="${escapeHtml(v.variant || "")}">
+            </div>` : ""}
+
+          ${tpl.fields.price ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Prix (optionnel)</label>
+              <input id="mPrice" inputmode="decimal" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Ex: 49.99" value="${v.price ?? ""}">
+            </div>` : ""}
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Statut</label>
+            <select id="mStatus" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+              ${statusOptions}
+            </select>
+          </div>
+
+          ${tpl.fields.notes ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Notes</label>
+              <textarea id="mNotes" rows="3" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Détails utiles…">${escapeHtml(v.notes || "")}</textarea>
+            </div>` : ""}
+        </div>
+      `,
+      primaryText: "Ajouter",
+      secondaryText: "Annuler",
+      onSecondary: () => closeModal(),
+      onPrimary: async () => {
+        const title = (document.getElementById("mTitle").value || "").trim();
+        if (!title) return alert("Nom obligatoire.");
+
+        const payload = {
+          title,
+          category: document.getElementById("mCategory") ? document.getElementById("mCategory").value : null,
+          qty: document.getElementById("mQty") ? parseMaybeNumber(document.getElementById("mQty").value) : null,
+          unit: document.getElementById("mUnit") ? (document.getElementById("mUnit").value || "").trim() : null,
+          link: document.getElementById("mLink") ? (document.getElementById("mLink").value || "").trim() : "",
+          imageUrl: document.getElementById("mImage") ? (document.getElementById("mImage").value || "").trim() : "",
+          variant: document.getElementById("mVariant") ? (document.getElementById("mVariant").value || "").trim() : "",
+          price: document.getElementById("mPrice") ? parseMaybeNumber(document.getElementById("mPrice").value) : null,
+          notes: document.getElementById("mNotes") ? (document.getElementById("mNotes").value || "").trim() : "",
+          status: document.getElementById("mStatus").value || tpl.statuses[0].key,
+          assignedTo: null,
+          createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "lists", currentList.id, "items"), payload);
+        closeModal();
+      }
     });
 
-    // bind
+    // set defaults
+    setTimeout(() => {
+      if (document.getElementById("mCategory")) document.getElementById("mCategory").value = v.category || tpl.categories[0] || "Général";
+      document.getElementById("mStatus").value = v.status || tpl.statuses[0].key;
+    }, 0);
+  }
+
+  /* Suggested modal */
+  function openSuggestedModal() {
+    if (!isAdmin) return alert("Suggestions réservées au mode édition.");
+
+    const sug = tpl.suggested || [];
+    if (!sug.length) return alert("Aucune suggestion pour ce template.");
+
+    const rows = sug.map((s, i) => `
+      <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-xl p-3">
+        <div class="min-w-0">
+          <div class="font-semibold truncate">${escapeHtml(s.title)}</div>
+          <div class="text-xs text-slate-500">
+            ${escapeHtml(s.category || "")}
+            ${s.qty != null ? ` • ${escapeHtml(String(s.qty))} ${escapeHtml(s.unit || "")}` : ""}
+          </div>
+        </div>
+        <button data-i="${i}" class="btnAddSug rounded-xl bg-slate-900 text-white px-3 py-2 text-sm font-semibold hover:bg-slate-800">Ajouter</button>
+      </div>
+    `).join("");
+
+    showModal({
+      title: "Suggestions",
+      subtitle: "Ajout en 1 clic (admin uniquement).",
+      bodyHtml: `<div class="space-y-2">${rows}</div>`,
+      primaryText: "Fermer",
+      onPrimary: () => closeModal()
+    });
+
     setTimeout(() => {
       document.querySelectorAll(".btnAddSug").forEach(btn => {
         btn.addEventListener("click", async () => {
           const i = Number(btn.getAttribute("data-i"));
           const s = sug[i];
-          await addDoc(collection(db, "lists", listId, "items"), {
-            title: s.title,
-            category: s.category || currentTemplate.categories[0] || "Général",
-            qty: s.qty ?? null,
-            unit: s.unit ?? null,
-            notes: s.notes ?? "",
-            link: s.link ?? "",
-            variant: s.variant ?? "",
-            price: s.price ?? null,
-            status: currentTemplate.statuses[0].key,
-            assignedTo: null,
-            createdAt: serverTimestamp()
-          });
+          openItemCreateModal(s);
         });
       });
     }, 0);
   }
 
-  function openItemModal({ mode, item }) {
-    const tpl = currentTemplate;
-    const statusOptions = tpl.statuses.map(s => `<option value="${s.key}">${escapeHtml(s.label)}</option>`).join("");
-    const catOptions = tpl.categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-
-    const v = item || {};
-    const title = escapeHtml(v.title || "");
-    const notes = escapeHtml(v.notes || "");
-    const category = escapeHtml(v.category || (tpl.categories[0] || "Général"));
-    const qty = v.qty ?? "";
-    const unit = escapeHtml(v.unit || "");
-    const link = escapeHtml(v.link || "");
-    const variant = escapeHtml(v.variant || "");
-    const price = v.price ?? "";
-    const status = v.status || tpl.statuses[0].key;
-
-    const fieldRow = (label, html) => `
-      <div>
-        <label class="text-sm font-medium text-slate-700">${label}</label>
-        ${html}
-      </div>
-    `;
-
-    const bodyParts = [];
-
-    bodyParts.push(fieldRow("Nom", `
-      <input id="mTitle" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Ex: Coca / Passeport / Montre…" value="${title}" />
-    `));
-
-    if (tpl.fields.category) {
-      bodyParts.push(fieldRow("Catégorie", `
-        <select id="mCategory" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
-          ${catOptions}
-        </select>
-      `));
-    }
-
-    if (tpl.fields.qty) {
-      bodyParts.push(`
-        <div class="grid grid-cols-2 gap-3">
-          ${fieldRow("Quantité", `<input id="mQty" inputmode="decimal" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Ex: 2" value="${qty}" />`)}
-          ${fieldRow("Unité", `<input id="mUnit" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Ex: bouteilles / pcs / pack" value="${unit}" />`)}
-        </div>
-      `);
-    }
-
-    if (tpl.fields.link) {
-      bodyParts.push(fieldRow("Lien", `
-        <input id="mLink" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Lien produit" value="${link}" />
-      `));
-    }
-
-    if (tpl.fields.variant) {
-      bodyParts.push(fieldRow("Variante", `
-        <input id="mVariant" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Couleur / taille / modèle" value="${variant}" />
-      `));
-    }
-
-    if (tpl.fields.price) {
-      bodyParts.push(fieldRow("Prix (optionnel)", `
-        <input id="mPrice" inputmode="decimal" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Ex: 49.99" value="${price}" />
-      `));
-    }
-
-    bodyParts.push(fieldRow("Statut", `
-      <select id="mStatus" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2">
-        ${statusOptions}
-      </select>
-    `));
-
-    if (tpl.fields.notes) {
-      bodyParts.push(fieldRow("Notes", `
-        <textarea id="mNotes" rows="3" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Détails utiles…">${notes}</textarea>
-      `));
-    }
-
-    const bodyHtml = `<div class="space-y-3">${bodyParts.join("")}</div>`;
-
-    showModal({
-      title: mode === "create" ? "Ajouter un item" : "Modifier l’item",
-      subtitle: "Les champs s’adaptent au template de la liste.",
-      bodyHtml,
-      primaryText: mode === "create" ? "Ajouter" : "Enregistrer",
-      secondaryText: mode === "edit" ? "Supprimer" : null,
-      onSecondary: async () => {
-        if (!isAdmin) return alert("Suppression réservée au mode édition.");
-        if (!confirm("Supprimer cet item ?")) return;
-        await deleteDoc(doc(db, "lists", listId, "items", item.id));
-        closeModal();
-      },
-      onPrimary: async () => {
-        const t = (document.getElementById("mTitle").value || "").trim();
-        if (!t) return alert("Le nom est obligatoire.");
-
-        const payload = {
-          title: t,
-          category: document.getElementById("mCategory") ? document.getElementById("mCategory").value : null,
-          qty: document.getElementById("mQty") ? parseMaybeNumber(document.getElementById("mQty").value) : null,
-          unit: document.getElementById("mUnit") ? (document.getElementById("mUnit").value || "").trim() : null,
-          link: document.getElementById("mLink") ? (document.getElementById("mLink").value || "").trim() : "",
-          variant: document.getElementById("mVariant") ? (document.getElementById("mVariant").value || "").trim() : "",
-          price: document.getElementById("mPrice") ? parseMaybeNumber(document.getElementById("mPrice").value) : null,
-          notes: document.getElementById("mNotes") ? (document.getElementById("mNotes").value || "").trim() : "",
-          status: document.getElementById("mStatus").value || currentTemplate.statuses[0].key,
-        };
-
-        if (mode === "create") {
-          await addDoc(collection(db, "lists", listId, "items"), {
-            ...payload,
-            assignedTo: null,
-            createdAt: serverTimestamp()
-          });
-        } else {
-          if (!isAdmin) return alert("Modification réservée au mode édition.");
-          await updateDoc(doc(db, "lists", listId, "items", item.id), payload);
-        }
-
-        closeModal();
-      }
-    });
-
-    // set selected values after render
-    setTimeout(() => {
-      if (document.getElementById("mCategory")) document.getElementById("mCategory").value = category;
-      document.getElementById("mStatus").value = status;
-    }, 0);
+  /* Render meta badges */
+  function renderMetaBadges() {
+    $("badgeSurprise").classList.add("hidden");
+    if (currentList?.type === "cadeaux" && currentList?.surprise) $("badgeSurprise").classList.remove("hidden");
   }
 
-  function parseMaybeNumber(v) {
-    const s = (v ?? "").toString().trim().replace(",", ".");
-    if (!s) return null;
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  /* ===================== Rendering ===================== */
+  /* Render all */
   function renderAll() {
+    renderMetaBadges();
     renderKpis();
     renderItems();
+    refreshActionAvailability();
+  }
+
+  function refreshActionAvailability() {
+    // Guests cannot add/suggest/quick-add
+    $("btnSuggested").disabled = !isAdmin;
+    $("btnSuggested").classList.toggle("opacity-50", !isAdmin);
+    $("btnSuggested").classList.toggle("cursor-not-allowed", !isAdmin);
+
+    $("btnAddQuick").disabled = !isAdmin;
+    $("btnAddQuick").classList.toggle("opacity-50", !isAdmin);
+    $("btnAddQuick").classList.toggle("cursor-not-allowed", !isAdmin);
+
+    $("btnQuickAddGo").disabled = !isAdmin;
+    $("btnQuickAddGo").classList.toggle("opacity-50", !isAdmin);
+    $("btnQuickAddGo").classList.toggle("cursor-not-allowed", !isAdmin);
+
+    $("inpQuickAdd").disabled = !isAdmin;
   }
 
   function renderKpis() {
     const total = items.length;
+    const doneKey = tpl.statuses[tpl.statuses.length - 1]?.key;
 
-    const doneKeys = new Set(["offert", "achete", "pret", "dans_voiture", "apporte"]);
-    // for templates where "done" is different, we treat last status as done as fallback
-    const lastStatusKey = currentTemplate.statuses[currentTemplate.statuses.length - 1]?.key;
-
-    const done = items.filter(it => it.status === lastStatusKey || doneKeys.has(it.status)).length;
+    const done = items.filter(it => it.status === doneKey).length;
     const assigned = items.filter(it => !!it.assignedTo).length;
     const left = Math.max(0, total - done);
 
-    kpiTotal.textContent = total;
-    kpiAssigned.textContent = assigned;
-    kpiDone.textContent = done;
-    kpiLeft.textContent = left;
+    $("kpiTotal").textContent = total;
+    $("kpiAssigned").textContent = assigned;
+    $("kpiDone").textContent = done;
+    $("kpiLeft").textContent = left;
+  }
+
+  function reservationLabel(it) {
+    // Gift surprise: hide names for non-admin
+    if (currentList?.type === "cadeaux" && currentList?.surprise && !isAdmin) {
+      return it.assignedTo ? "Réservé" : "Disponible";
+    }
+    return it.assignedTo ? `Réservé par ${it.assignedTo}` : "Disponible";
   }
 
   function renderItems() {
-    const tpl = currentTemplate;
-    const statusLabel = templateStatusLabels(tpl);
+    const search = ($("inpSearch").value || "").trim().toLowerCase();
+    const cat = $("selCategory").value;
+    const st = $("selStatus").value;
 
-    const search = inpSearch.value.trim().toLowerCase();
-    const cat = selCategory.value;
-    const st = selStatus.value;
+    const statusLabel = Object.fromEntries(tpl.statuses.map(s => [s.key, s.label]));
 
     const filtered = items.filter(it => {
       const okSearch =
@@ -862,136 +791,390 @@
       return okSearch && okCat && okSt;
     });
 
-    itemsContainer.innerHTML = "";
+    const wrap = $("itemsContainer");
+    wrap.innerHTML = "";
 
     if (!filtered.length) {
-      itemsContainer.innerHTML = `
+      wrap.innerHTML = `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center text-slate-600">
-          Aucun item. Ajoute-en un, ou utilise <span class="font-semibold">Suggestions</span>.
+          Aucun item. ${isAdmin ? "Ajoute-en un ou utilise Suggestions." : "Attends qu’un admin ajoute des items."}
         </div>
       `;
       return;
     }
 
+    const doneKey = tpl.statuses[tpl.statuses.length - 1].key;
+    const midKey = tpl.statuses[Math.min(1, tpl.statuses.length - 1)]?.key || tpl.statuses[0].key;
+
     for (const it of filtered) {
       const title = escapeHtml(it.title);
-      const notes = escapeHtml(it.notes || "");
       const category = escapeHtml(it.category || "");
+      const notes = escapeHtml(it.notes || "");
       const statusKey = it.status || tpl.statuses[0].key;
       const statusText = escapeHtml(statusLabel[statusKey] || statusKey);
-      const assignedTo = it.assignedTo ? escapeHtml(it.assignedTo) : "";
-      const link = (it.link || "").trim();
-      const variant = (it.variant || "").trim();
-      const price = (it.price != null && it.price !== "") ? String(it.price) : "";
-      const qtyStr = tpl.fields.qty ? fmtQty(it) : "";
 
-      const canEdit = isAdmin;
+      const qty = (tpl.fields.qty && it.qty != null) ? `${escapeHtml(String(it.qty))}${it.unit ? " " + escapeHtml(it.unit) : ""}` : "";
+      const variant = (tpl.fields.variant && it.variant) ? escapeHtml(it.variant) : "";
+      const price = (tpl.fields.price && it.price != null) ? escapeHtml(String(it.price)) + " €" : "";
+
+      const link = (tpl.fields.link && it.link) ? it.link : "";
+      const img = (tpl.fields.image && it.imageUrl) ? it.imageUrl : "";
+
       const isAssigned = !!it.assignedTo;
 
-      // CTA logic
-      const primaryCtaLabel = !isAssigned ? tpl.cta.take : "Libérer";
-      const secondaryCtaLabel = tpl.cta.done;
-
-      const showDone = isAssigned; // only after someone took it
-      const doneKey = tpl.statuses[tpl.statuses.length - 1].key;
+      const ctaTake = !isAssigned ? tpl.cta.take : "Libérer";
+      const ctaDone = tpl.cta.done;
 
       const card = document.createElement("div");
       card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5";
 
       card.innerHTML = `
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <div class="font-semibold text-base truncate">${title}</div>
-              ${category ? `<span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">${category}</span>` : ""}
-              ${qtyStr ? `<span class="text-xs text-slate-500">${escapeHtml(qtyStr)}</span>` : ""}
+        <div class="flex gap-3">
+          ${img ? `
+            <div class="shrink-0 w-20 h-20 rounded-xl border border-slate-200 overflow-hidden bg-slate-100">
+              <img src="${escapeHtml(img)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">
             </div>
+          ` : ""}
 
-            <div class="mt-2 flex items-center gap-2 flex-wrap">
-              <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${statusClass(statusKey)}">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-bold text-base truncate">${title}</div>
+                <div class="mt-1 flex items-center gap-2 flex-wrap">
+                  ${category ? `<span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">${category}</span>` : ""}
+                  ${qty ? `<span class="text-xs text-slate-500">• ${qty}</span>` : ""}
+                  ${variant ? `<span class="text-xs text-slate-500">• ${variant}</span>` : ""}
+                  ${price ? `<span class="text-xs text-slate-500">• ${price}</span>` : ""}
+                </div>
+              </div>
+
+              <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${statusClass(statusKey)}">
                 ${statusText}
               </span>
-              ${assignedTo ? `<span class="text-xs text-slate-600">Attribué à <span class="font-semibold">${assignedTo}</span></span>` : `<span class="text-xs text-slate-500">Non attribué</span>`}
-              ${price ? `<span class="text-xs text-slate-500">• ${escapeHtml(price)} €</span>` : ""}
-              ${variant ? `<span class="text-xs text-slate-500">• ${escapeHtml(variant)}</span>` : ""}
+            </div>
+
+            <div class="mt-2 text-xs text-slate-600 font-medium">
+              ${escapeHtml(reservationLabel(it))}
             </div>
 
             ${notes ? `<div class="mt-2 text-sm text-slate-600 whitespace-pre-wrap">${notes}</div>` : ""}
 
             ${link ? `<a class="mt-3 inline-flex text-sm font-semibold text-slate-900 underline hover:text-slate-700" target="_blank" rel="noopener" href="${escapeHtml(link)}">Ouvrir le lien</a>` : ""}
-          </div>
 
-          <div class="flex flex-col gap-2 items-end">
-            <button class="btnPrimary rounded-xl bg-slate-900 text-white px-3 py-2 text-sm font-semibold hover:bg-slate-800" data-id="${it.id}">
-              ${escapeHtml(primaryCtaLabel)}
-            </button>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button class="btnTake rounded-xl bg-slate-900 text-white px-3 py-2 text-sm font-semibold hover:bg-slate-800" data-id="${it.id}">
+                ${escapeHtml(ctaTake)}
+              </button>
 
-            ${showDone ? `
-              <button class="btnDone rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" data-id="${it.id}">
-                ${escapeHtml(secondaryCtaLabel)}
-              </button>` : ""}
+              ${isAssigned ? `
+                <button class="btnDone rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" data-id="${it.id}">
+                  ${escapeHtml(ctaDone)}
+                </button>
+              ` : ""}
 
-            ${canEdit ? `
-              <button class="btnEdit rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" data-id="${it.id}">
-                Modifier
-              </button>` : ""}
+              ${isAdmin ? `
+                <button class="btnEdit rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" data-id="${it.id}">
+                  Modifier
+                </button>
+                <button class="btnDel rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm font-semibold hover:bg-red-100" data-id="${it.id}">
+                  Supprimer
+                </button>
+              ` : ""}
+            </div>
           </div>
         </div>
       `;
 
-      itemsContainer.appendChild(card);
+      $("itemsContainer").appendChild(card);
 
-      // Bind actions
-      card.querySelector(".btnPrimary").addEventListener("click", async () => {
-        if (!it.assignedTo) {
-          const name = getOrAskUserName();
-          if (!name) return;
+      // take / release
+      card.querySelector(".btnTake").addEventListener("click", async () => {
+        if (!isAssigned) {
+          let name = ($("inpMyName").value || "").trim();
+          if (!name) {
+            alert("Renseigne “Mon nom” pour réserver.");
+            $("inpMyName").focus();
+            return;
+          }
+          localStorage.setItem(NAME_KEY, name);
 
-          // set assigned + update status for some templates
-          // For cadeaux: from disponible -> reserve
-          const next = statusKey === tpl.statuses[0].key ? tpl.statuses[Math.min(1, tpl.statuses.length - 1)]?.key : statusKey;
+          // move status forward when taking (if currently first)
+          const nextStatus = (statusKey === tpl.statuses[0].key) ? midKey : statusKey;
 
-          await updateDoc(doc(db, "lists", listId, "items", it.id), {
+          await updateDoc(doc(db, "lists", currentList.id, "items", it.id), {
             assignedTo: name,
-            status: next || statusKey
+            status: nextStatus
           });
         } else {
-          // release
-          const name = localStorage.getItem("liste_user_name") || "";
-          const ok = (!name || name === it.assignedTo) ? true : confirm("Cet item est attribué à quelqu’un d’autre. Le libérer quand même ?");
-          if (!ok) return;
-
-          await updateDoc(doc(db, "lists", listId, "items", it.id), {
+          // release: if it's not your name, confirm
+          const my = (localStorage.getItem(NAME_KEY) || "").trim();
+          if (my && it.assignedTo && my !== it.assignedTo) {
+            const ok = confirm("Cet item est réservé par quelqu’un d’autre. Le libérer quand même ?");
+            if (!ok) return;
+          }
+          await updateDoc(doc(db, "lists", currentList.id, "items", it.id), {
             assignedTo: null,
             status: tpl.statuses[0].key
           });
         }
       });
 
-      const btnDoneEl = card.querySelector(".btnDone");
-      if (btnDoneEl) {
-        btnDoneEl.addEventListener("click", async () => {
-          // Done -> last status
-          await updateDoc(doc(db, "lists", listId, "items", it.id), { status: doneKey });
+      // done
+      const btnDone = card.querySelector(".btnDone");
+      if (btnDone) {
+        btnDone.addEventListener("click", async () => {
+          await updateDoc(doc(db, "lists", currentList.id, "items", it.id), { status: doneKey });
         });
       }
 
-      const btnEditEl = card.querySelector(".btnEdit");
-      if (btnEditEl) {
-        btnEditEl.addEventListener("click", () => openItemModal({ mode: "edit", item: it }));
+      // edit / delete (admin only)
+      const btnEdit = card.querySelector(".btnEdit");
+      if (btnEdit) {
+        btnEdit.addEventListener("click", () => openItemEditModal(it));
+      }
+      const btnDel = card.querySelector(".btnDel");
+      if (btnDel) {
+        btnDel.addEventListener("click", async () => {
+          if (!confirm("Supprimer cet item ?")) return;
+          await deleteDoc(doc(db, "lists", currentList.id, "items", it.id));
+        });
       }
     }
   }
 
-  /* ===================== Boot ===================== */
-  await loadList();
+  function openItemEditModal(item) {
+    if (!isAdmin) return alert("Réservé au mode édition.");
 
-  // If not in list mode, hide top buttons
-  if (!listId) {
-    $("btnShareTop").classList.add("hidden");
-    $("btnAdminTop").classList.add("hidden");
+    const statusOptions = tpl.statuses.map(s => `<option value="${s.key}">${escapeHtml(s.label)}</option>`).join("");
+    const catOptions = tpl.categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+    showModal({
+      title: "Modifier l’item",
+      subtitle: "Admin uniquement.",
+      bodyHtml: `
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm font-medium text-slate-700">Nom</label>
+            <input id="mTitle" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${escapeHtml(item.title || "")}">
+          </div>
+
+          ${tpl.fields.category ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Catégorie</label>
+              <select id="mCategory" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+                ${catOptions}
+              </select>
+            </div>` : ""}
+
+          ${tpl.fields.qty ? `
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-sm font-medium text-slate-700">Quantité</label>
+                <input id="mQty" inputmode="decimal" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${item.qty ?? ""}">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-700">Unité</label>
+                <input id="mUnit" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${escapeHtml(item.unit || "")}">
+              </div>
+            </div>` : ""}
+
+          ${tpl.fields.link ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Lien produit</label>
+              <input id="mLink" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${escapeHtml(item.link || "")}">
+            </div>` : ""}
+
+          ${tpl.fields.image ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Image (URL)</label>
+              <input id="mImage" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${escapeHtml(item.imageUrl || "")}">
+            </div>` : ""}
+
+          ${tpl.fields.variant ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Variante</label>
+              <input id="mVariant" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${escapeHtml(item.variant || "")}">
+            </div>` : ""}
+
+          ${tpl.fields.price ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Prix</label>
+              <input id="mPrice" inputmode="decimal" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" value="${item.price ?? ""}">
+            </div>` : ""}
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">Statut</label>
+            <select id="mStatus" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+              ${statusOptions}
+            </select>
+          </div>
+
+          ${tpl.fields.notes ? `
+            <div>
+              <label class="text-sm font-medium text-slate-700">Notes</label>
+              <textarea id="mNotes" rows="3" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">${escapeHtml(item.notes || "")}</textarea>
+            </div>` : ""}
+
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div class="text-sm font-semibold">Réservation</div>
+            <div class="text-xs text-slate-500 mt-1">Tu peux libérer l’item ici si besoin.</div>
+            <button id="mClearRes" class="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">Libérer</button>
+          </div>
+        </div>
+      `,
+      primaryText: "Enregistrer",
+      secondaryText: "Réglages admin",
+      onSecondary: async () => { await openAdminSettings(); },
+      onPrimary: async () => {
+        const payload = {
+          title: (document.getElementById("mTitle").value || "").trim(),
+          category: document.getElementById("mCategory") ? document.getElementById("mCategory").value : null,
+          qty: document.getElementById("mQty") ? parseMaybeNumber(document.getElementById("mQty").value) : null,
+          unit: document.getElementById("mUnit") ? (document.getElementById("mUnit").value || "").trim() : null,
+          link: document.getElementById("mLink") ? (document.getElementById("mLink").value || "").trim() : "",
+          imageUrl: document.getElementById("mImage") ? (document.getElementById("mImage").value || "").trim() : "",
+          variant: document.getElementById("mVariant") ? (document.getElementById("mVariant").value || "").trim() : "",
+          price: document.getElementById("mPrice") ? parseMaybeNumber(document.getElementById("mPrice").value) : null,
+          notes: document.getElementById("mNotes") ? (document.getElementById("mNotes").value || "").trim() : "",
+          status: document.getElementById("mStatus").value || tpl.statuses[0].key
+        };
+
+        if (!payload.title) return alert("Nom obligatoire.");
+        await updateDoc(doc(db, "lists", currentList.id, "items", item.id), payload);
+        closeModal();
+      }
+    });
+
+    setTimeout(() => {
+      if (document.getElementById("mCategory")) document.getElementById("mCategory").value = item.category || tpl.categories[0] || "";
+      document.getElementById("mStatus").value = item.status || tpl.statuses[0].key;
+
+      document.getElementById("mClearRes").addEventListener("click", async () => {
+        await updateDoc(doc(db, "lists", currentList.id, "items", item.id), {
+          assignedTo: null,
+          status: tpl.statuses[0].key
+        });
+        alert("Item libéré.");
+      });
+    }, 0);
   }
+
+  /* Load list */
+  async function loadList() {
+    if (!listId) {
+      $("btnShareTop").classList.add("hidden");
+      $("btnEditToggleTop").classList.add("hidden");
+      return;
+    }
+
+    $("createPanel").classList.add("hidden");
+    $("listPanel").classList.remove("hidden");
+    $("btnShareTop").classList.remove("hidden");
+    $("btnEditToggleTop").classList.remove("hidden");
+
+    const ref = doc(db, "lists", listId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      alert("Liste introuvable.");
+      location.href = location.pathname;
+      return;
+    }
+
+    currentList = { id: listId, ...snap.data() };
+    tpl = TEMPLATES[currentList.type] || TEMPLATES.cadeaux;
+
+    $("txtListTitle").textContent = currentList.title;
+    $("badgeType").textContent = tpl.label;
+    $("txtListHint").textContent = tpl.hint;
+
+    if (currentList.accessHash) $("badgeAccess").classList.remove("hidden");
+
+    // Access gate
+    if (currentList.accessHash) {
+      const code = prompt("Code d’accès requis :");
+      if (!code) { location.href = location.pathname; return; }
+      const h = await sha256(code.trim());
+      if (h !== currentList.accessHash) {
+        alert("Code incorrect.");
+        location.href = location.pathname;
+        return;
+      }
+    }
+
+    // Filters
+    setSelectOptions($("selCategory"), tpl.categories, "Toutes");
+    setSelectOptions($("selStatus"), tpl.statuses.map(s => s.key), "Tous");
+
+    // Name field
+    initNameField();
+
+    // Share
+    const share = () => shareLink(listId);
+    $("btnShare").onclick = share;
+    $("btnShareTop").onclick = share;
+
+    // Edit toggle buttons
+    $("btnEditToggle").onclick = toggleEditMode;
+    $("btnEditToggleTop").onclick = toggleEditMode;
+
+    // Suggested (admin-only)
+    $("btnSuggested").onclick = openSuggestedModal;
+
+    // Add (admin-only) -> guided modal
+    $("btnAddQuick").onclick = () => openItemCreateModal();
+
+    // Quick add
+    async function quickAdd() {
+      if (!isAdmin) return alert("Ajout réservé au mode édition.");
+      const t = ($("inpQuickAdd").value || "").trim();
+      if (!t) return;
+      $("inpQuickAdd").value = "";
+      await addDoc(collection(db, "lists", currentList.id, "items"), {
+        title: t,
+        category: tpl.categories[0] || "Général",
+        qty: null, unit: null,
+        link: "", imageUrl: "", variant: "", price: null,
+        notes: "",
+        status: tpl.statuses[0].key,
+        assignedTo: null,
+        createdAt: serverTimestamp()
+      });
+    }
+    $("btnQuickAddGo").onclick = quickAdd;
+    $("inpQuickAdd").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") quickAdd();
+    });
+
+    // Search + filter
+    $("inpSearch").addEventListener("input", renderItems);
+    $("selCategory").addEventListener("change", renderItems);
+    $("selStatus").addEventListener("change", renderItems);
+
+    // Watch list doc to reflect surprise changes etc.
+    onSnapshot(ref, (s) => {
+      if (s.exists()) {
+        const next = { id: currentList.id, ...s.data() };
+        currentList = next;
+        renderMetaBadges();
+        renderItems();
+      }
+    });
+
+    // Subscribe items
+    if (unsub) unsub();
+    const itemsRef = collection(db, "lists", currentList.id, "items");
+    const q = query(itemsRef, orderBy("createdAt", "asc"));
+    unsub = onSnapshot(q, (qs) => {
+      items = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAll();
+    });
+
+    // Initial badges
+    renderMetaBadges();
+    refreshActionAvailability();
+  }
+
+  await loadList();
 </script>
 </body>
 </html>
-
