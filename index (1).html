@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listes – MVP</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons (optional) -->
+  <style>
+    .card { box-shadow: 0 10px 25px rgba(0,0,0,.06); }
+    .chip { border: 1px solid rgba(0,0,0,.08); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold">Listes – MVP</h1>
+        <p class="text-sm text-slate-600">Créer une liste, partager un lien, réserver/attribuer des items. Accès et édition protégés par code.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnHome" class="hidden px-3 py-2 rounded-lg bg-white chip text-sm">Accueil</button>
+        <button id="btnShare" class="hidden px-3 py-2 rounded-lg bg-slate-900 text-white text-sm">Partager</button>
+      </div>
+    </header>
+
+    <!-- HOME: create list -->
+    <section id="homeView" class="space-y-4">
+      <div class="bg-white rounded-2xl p-5 card">
+        <h2 class="text-lg font-semibold mb-3">Créer une liste</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-slate-700">Type de liste</label>
+            <select id="listType" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 bg-white">
+              <option value="gifts">🎁 Cadeaux</option>
+              <option value="groceries">🛒 Courses / achats</option>
+              <option value="travel">🧳 Voyage (checklist)</option>
+              <option value="roadtrip">🚗 Roadtrip</option>
+              <option value="potluck">🍽️ Repas “qui ramène quoi”</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-700">Nom de la liste</label>
+            <input id="listTitle" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Ex : Noël 2025, Roadtrip Espagne…" />
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-700">Code d’accès (optionnel)</label>
+            <input id="accessCode" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Si renseigné, il sera demandé pour ouvrir la liste" />
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-700">Code d’édition (admin)</label>
+            <input id="adminCode" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Obligatoire (protège le mode édition)" />
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center gap-3 mt-4">
+          <button id="btnCreate" class="px-4 py-2 rounded-lg bg-slate-900 text-white">Créer la liste</button>
+          <p class="text-xs text-slate-500">
+            MVP : les codes sont stockés en clair dans Firestore. À durcir ensuite (hash + rules).
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-5 card">
+        <h2 class="text-lg font-semibold mb-2">Ouvrir une liste existante</h2>
+        <div class="flex flex-col md:flex-row gap-3">
+          <input id="openListId" class="flex-1 px-3 py-2 rounded-lg border border-slate-200" placeholder="Colle ici l’ID de la liste (ex : AbC123…)" />
+          <button id="btnOpen" class="px-4 py-2 rounded-lg bg-white chip">Ouvrir</button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Astuce : le bouton “Partager” copie le lien et l’ID.</p>
+      </div>
+    </section>
+
+    <!-- LIST VIEW -->
+    <section id="listView" class="hidden space-y-4">
+      <!-- List header / controls -->
+      <div class="bg-white rounded-2xl p-5 card">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span id="listBadge" class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700"></span>
+              <span id="lockState" class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700"></span>
+            </div>
+            <h2 id="listTitleDisplay" class="text-xl font-semibold">—</h2>
+            <p id="listMeta" class="text-sm text-slate-600 mt-1">—</p>
+          </div>
+
+          <div class="flex flex-col gap-2 min-w-[220px]">
+            <div class="flex gap-2">
+              <button id="btnUnlock" class="px-3 py-2 rounded-lg bg-white chip text-sm hidden">Entrer le code</button>
+              <button id="btnAdmin" class="px-3 py-2 rounded-lg bg-white chip text-sm">Mode édition</button>
+            </div>
+            <div class="flex gap-2">
+              <input id="userName" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="Ton prénom (pour réserver)" />
+              <button id="btnSaveName" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-sm">OK</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+          <div class="bg-slate-50 rounded-xl p-3">
+            <div class="text-xs text-slate-600">Total items</div>
+            <div id="kpiTotal" class="text-lg font-semibold">0</div>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-3">
+            <div class="text-xs text-slate-600" id="kpiLabelMiddle">Attribués</div>
+            <div id="kpiMiddle" class="text-lg font-semibold">0</div>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-3">
+            <div class="text-xs text-slate-600" id="kpiLabelDone">Terminés</div>
+            <div id="kpiDone" class="text-lg font-semibold">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white rounded-2xl p-5 card">
+        <div class="flex flex-col md:flex-row gap-3 md:items-center">
+          <input id="searchInput" class="flex-1 px-3 py-2 rounded-lg border border-slate-200" placeholder="Rechercher un item…" />
+          <select id="statusFilter" class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+            <option value="all">Tous statuts</option>
+          </select>
+          <select id="categoryFilter" class="px-3 py-2 rounded-lg border border-slate-200 bg-white">
+            <option value="all">Toutes catégories</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Add / edit (admin) -->
+      <div id="adminPanel" class="hidden bg-white rounded-2xl p-5 card">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-lg font-semibold">Ajouter un item</h3>
+          <span class="text-xs text-slate-500">Visible uniquement en mode édition</span>
+        </div>
+
+        <form id="itemForm" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="text-sm text-slate-700">Titre</label>
+            <input id="itemTitle" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Ex : Bottes de pluie, 2L d’eau, Carte d’identité…" required />
+          </div>
+
+          <div id="qtyWrap">
+            <label class="text-sm text-slate-700">Quantité</label>
+            <div class="mt-1 flex gap-2">
+              <input id="itemQty" type="number" step="0.1" min="0" class="w-32 px-3 py-2 rounded-lg border border-slate-200" placeholder="1" />
+              <input id="itemUnit" class="flex-1 px-3 py-2 rounded-lg border border-slate-200" placeholder="unité (ex : pcs, bouteilles, kg)" />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm text-slate-700">Catégorie</label>
+            <input id="itemCategory" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Ex : Vêtements, Boissons, Docs…" />
+          </div>
+
+          <div id="linkWrap" class="md:col-span-2">
+            <label class="text-sm text-slate-700">Lien (optionnel)</label>
+            <input id="itemLink" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="https://…" />
+          </div>
+
+          <div id="variantWrap" class="md:col-span-2 hidden">
+            <label class="text-sm text-slate-700">Variante (cadeaux)</label>
+            <input id="itemVariant" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Couleur / taille / modèle…" />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="text-sm text-slate-700">Notes</label>
+            <textarea id="itemNotes" rows="2" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="Détails utiles…"></textarea>
+          </div>
+
+          <div class="md:col-span-2 flex items-center gap-2">
+            <button class="px-4 py-2 rounded-lg bg-slate-900 text-white" type="submit">Ajouter</button>
+            <button id="btnAddBulk" class="px-3 py-2 rounded-lg bg-white chip" type="button">Ajout en masse</button>
+            <span class="text-xs text-slate-500">Astuce : ajoute 1 item par ligne.</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Items -->
+      <div class="bg-white rounded-2xl p-5 card">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h3 class="text-lg font-semibold">Items</h3>
+          <div class="text-sm text-slate-600"><span id="itemCount">0</span> élément(s)</div>
+        </div>
+
+        <div id="itemsContainer" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 p-4">
+      <div class="w-full max-w-lg bg-white rounded-2xl p-5 card">
+        <div class="flex items-center justify-between">
+          <h3 id="modalTitle" class="text-lg font-semibold">—</h3>
+          <button id="modalClose" class="px-2 py-1 rounded-lg bg-slate-100">✕</button>
+        </div>
+        <div id="modalBody" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, getDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // Firebase config (repris de ton projet existant)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCndbANVdwXSd7wFP4nz2XCj-SJ1FoufX0",
+      authDomain: "noel-15e6f.firebaseapp.com",
+      projectId: "noel-15e6f",
+      storageBucket: "noel-15e6f.firebasestorage.app",
+      messagingSenderId: "114172371506",
+      appId: "1:114172371506:web:51b588b29d42b50069922b",
+      measurementId: "G-0W6RFEBLY3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ---- Templates ----
+    const TEMPLATES = {
+      gifts: {
+        label: "🎁 Cadeaux",
+        status: ["available", "reserved", "done"],
+        statusLabels: { available: "Disponible", reserved: "Réservé", done: "Offert" },
+        actionLabel: { take: "Réserver", untake: "Annuler", done: "Marquer offert" },
+        middleKpi: "Réservés",
+        doneKpi: "Offerts",
+        showQty: false,
+        showVariant: true,
+        defaultCategories: ["High-tech", "Mode", "Maison", "Sport", "Autre"],
+        needsAssignee: true
+      },
+      groceries: {
+        label: "🛒 Courses / achats",
+        status: ["todo", "done"],
+        statusLabels: { todo: "À acheter", done: "Acheté" },
+        actionLabel: { take: "Je prends", untake: "Je ne prends plus", done: "Marquer acheté" },
+        middleKpi: "Pris",
+        doneKpi: "Achetés",
+        showQty: true,
+        showVariant: false,
+        defaultCategories: ["Alimentaire", "Hygiène", "Maison", "Bébé", "Autre"],
+        needsAssignee: true
+      },
+      travel: {
+        label: "🧳 Voyage (checklist)",
+        status: ["todo", "done"],
+        statusLabels: { todo: "À préparer", done: "Fait" },
+        actionLabel: { take: "Marquer fait", untake: "Annuler", done: "Marquer fait" },
+        middleKpi: "—",
+        doneKpi: "Faits",
+        showQty: true,
+        showVariant: false,
+        defaultCategories: ["Documents", "Santé", "Vêtements", "Toiletries", "Tech", "Autre"],
+        needsAssignee: false
+      },
+      roadtrip: {
+        label: "🚗 Roadtrip",
+        status: ["todo", "assigned", "loaded"],
+        statusLabels: { todo: "À prévoir", assigned: "Attribué", loaded: "Dans la voiture" },
+        actionLabel: { take: "Je m’en charge", untake: "Annuler", done: "Dans la voiture" },
+        middleKpi: "Attribués",
+        doneKpi: "Dans la voiture",
+        showQty: true,
+        showVariant: false,
+        defaultCategories: ["Voiture", "Camping", "Cuisine", "Sécurité", "Docs", "Autre"],
+        needsAssignee: true
+      },
+      potluck: {
+        label: "🍽️ Repas “qui ramène quoi”",
+        status: ["todo", "confirmed", "brought"],
+        statusLabels: { todo: "À apporter", confirmed: "Confirmé", brought: "Apporté" },
+        actionLabel: { take: "Je ramène", untake: "Annuler", done: "Marquer apporté" },
+        middleKpi: "Confirmés",
+        doneKpi: "Apportés",
+        showQty: true,
+        showVariant: false,
+        defaultCategories: ["Entrées", "Plats", "Desserts", "Boissons", "Autres"],
+        needsAssignee: true
+      }
+    };
+
+    // ---- DOM ----
+    const homeView = document.getElementById("homeView");
+    const listView = document.getElementById("listView");
+    const btnHome = document.getElementById("btnHome");
+    const btnShare = document.getElementById("btnShare");
+
+    const listType = document.getElementById("listType");
+    const listTitle = document.getElementById("listTitle");
+    const accessCode = document.getElementById("accessCode");
+    const adminCode = document.getElementById("adminCode");
+    const btnCreate = document.getElementById("btnCreate");
+
+    const openListId = document.getElementById("openListId");
+    const btnOpen = document.getElementById("btnOpen");
+
+    const listBadge = document.getElementById("listBadge");
+    const lockState = document.getElementById("lockState");
+    const listTitleDisplay = document.getElementById("listTitleDisplay");
+    const listMeta = document.getElementById("listMeta");
+
+    const btnUnlock = document.getElementById("btnUnlock");
+    const btnAdmin = document.getElementById("btnAdmin");
+
+    const userName = document.getElementById("userName");
+    const btnSaveName = document.getElementById("btnSaveName");
+
+    const kpiTotal = document.getElementById("kpiTotal");
+    const kpiMiddle = document.getElementById("kpiMiddle");
+    const kpiDone = document.getElementById("kpiDone");
+    const kpiLabelMiddle = document.getElementById("kpiLabelMiddle");
+    const kpiLabelDone = document.getElementById("kpiLabelDone");
+
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const categoryFilter = document.getElementById("categoryFilter");
+
+    const adminPanel = document.getElementById("adminPanel");
+    const itemForm = document.getElementById("itemForm");
+    const itemTitle = document.getElementById("itemTitle");
+    const itemNotes = document.getElementById("itemNotes");
+    const itemCategory = document.getElementById("itemCategory");
+    const itemQty = document.getElementById("itemQty");
+    const itemUnit = document.getElementById("itemUnit");
+    const itemLink = document.getElementById("itemLink");
+    const itemVariant = document.getElementById("itemVariant");
+
+    const qtyWrap = document.getElementById("qtyWrap");
+    const linkWrap = document.getElementById("linkWrap");
+    const variantWrap = document.getElementById("variantWrap");
+
+    const btnAddBulk = document.getElementById("btnAddBulk");
+
+    const itemsContainer = document.getElementById("itemsContainer");
+    const itemCount = document.getElementById("itemCount");
+
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalClose = document.getElementById("modalClose");
+
+    // ---- State ----
+    let currentListId = null;
+    let currentList = null;
+    let unsubscribeItems = null;
+    let itemsCache = [];
+
+    // ---- Helpers ----
+    function qs(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+    function setQs(name, value) {
+      const url = new URL(window.location.href);
+      if (value === null) url.searchParams.delete(name);
+      else url.searchParams.set(name, value);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function openModal(title, contentNode) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = "";
+      modalBody.appendChild(contentNode);
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+    function closeModal() {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+    modalClose.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    function toast(msg) {
+      const el = document.createElement("div");
+      el.className = "fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-3 py-2 rounded-lg shadow";
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1600);
+    }
+
+    function isUnlocked(listId) {
+      return localStorage.getItem("unlocked:" + listId) === "1";
+    }
+    function setUnlocked(listId, v) {
+      localStorage.setItem("unlocked:" + listId, v ? "1" : "0");
+    }
+    function isAdmin(listId) {
+      return localStorage.getItem("admin:" + listId) === "1";
+    }
+    function setAdmin(listId, v) {
+      localStorage.setItem("admin:" + listId, v ? "1" : "0");
+    }
+
+    function getSavedName() {
+      return localStorage.getItem("list.userName") || "";
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("Copié !");
+      } catch {
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        toast("Copié !");
+      }
+    }
+
+    function normalize(s) {
+      return (s || "").toString().trim().toLowerCase();
+    }
+
+    function applyTemplateUI() {
+      const t = TEMPLATES[currentList.type] || TEMPLATES.gifts;
+
+      listBadge.textContent = t.label;
+      kpiLabelMiddle.textContent = t.middleKpi;
+      kpiLabelDone.textContent = t.doneKpi;
+
+      qtyWrap.classList.toggle("hidden", !t.showQty);
+      variantWrap.classList.toggle("hidden", !t.showVariant);
+
+      // Fill filters
+      statusFilter.innerHTML = '<option value="all">Tous statuts</option>';
+      for (const s of t.status) {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = t.statusLabels[s] || s;
+        statusFilter.appendChild(opt);
+      }
+
+      categoryFilter.innerHTML = '<option value="all">Toutes catégories</option>';
+      for (const c of (t.defaultCategories || [])) {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        categoryFilter.appendChild(opt);
+      }
+
+      // Some placeholders per template
+      if (currentList.type === "gifts") {
+        itemLink.placeholder = "Lien du cadeau (optionnel)";
+        itemCategory.placeholder = "Catégorie (optionnel)";
+      } else if (currentList.type === "travel") {
+        itemLink.placeholder = "Lien utile (ex : billet, doc…) (optionnel)";
+        itemCategory.placeholder = "Catégorie (Documents, Santé…)";
+      } else {
+        itemLink.placeholder = "Lien (optionnel)";
+        itemCategory.placeholder = "Catégorie";
+      }
+    }
+
+    function updateLockState() {
+      const locked = !!(currentList.accessCode && currentList.accessCode.trim().length > 0);
+      const unlocked = !locked || isUnlocked(currentListId);
+      lockState.textContent = locked ? (unlocked ? "Déverrouillée" : "Verrouillée") : "Sans code";
+      btnUnlock.classList.toggle("hidden", unlocked || !locked);
+      itemsContainer.classList.toggle("opacity-40", !unlocked);
+      itemsContainer.classList.toggle("pointer-events-none", !unlocked);
+      adminPanel.classList.toggle("hidden", !unlocked || !isAdmin(currentListId));
+    }
+
+    function renderItems() {
+      const t = TEMPLATES[currentList.type] || TEMPLATES.gifts;
+
+      const q = normalize(searchInput.value);
+      const status = statusFilter.value;
+      const cat = categoryFilter.value;
+
+      let filtered = itemsCache.slice();
+
+      if (q) {
+        filtered = filtered.filter(it =>
+          normalize(it.title).includes(q) ||
+          normalize(it.notes).includes(q) ||
+          normalize(it.category).includes(q) ||
+          normalize(it.assignedTo).includes(q)
+        );
+      }
+      if (status !== "all") filtered = filtered.filter(it => it.status === status);
+      if (cat !== "all") filtered = filtered.filter(it => (it.category || "") === cat);
+
+      itemsContainer.innerHTML = "";
+      itemCount.textContent = String(filtered.length);
+
+      // KPIs
+      const total = itemsCache.length;
+      const mid = itemsCache.filter(it => (it.assignedTo || "").trim().length > 0 || it.status === "assigned" || it.status === "reserved" || it.status === "confirmed").length;
+      const done = itemsCache.filter(it => ["done","loaded","brought"].includes(it.status)).length;
+      kpiTotal.textContent = String(total);
+      kpiMiddle.textContent = String(mid);
+      kpiDone.textContent = String(done);
+
+      if (filtered.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "text-sm text-slate-500 py-6 text-center";
+        empty.textContent = "Aucun item pour l’instant.";
+        itemsContainer.appendChild(empty);
+        return;
+      }
+
+      for (const it of filtered) {
+        const card = document.createElement("div");
+        card.className = "border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-start md:justify-between gap-3";
+
+        const left = document.createElement("div");
+        left.className = "flex-1";
+
+        const title = document.createElement("div");
+        title.className = "font-semibold";
+        title.textContent = it.title || "—";
+
+        const meta = document.createElement("div");
+        meta.className = "text-sm text-slate-600 mt-1 space-y-1";
+
+        const statusLabel = t.statusLabels[it.status] || it.status;
+        const line1 = document.createElement("div");
+        const chips = [];
+
+        const st = document.createElement("span");
+        st.className = "inline-flex items-center text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 mr-2";
+        st.textContent = statusLabel;
+        chips.push(st);
+
+        if (it.category) {
+          const c = document.createElement("span");
+          c.className = "inline-flex items-center text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 mr-2";
+          c.textContent = it.category;
+          chips.push(c);
+        }
+
+        if (t.showQty && (it.qty || it.unit)) {
+          const qn = document.createElement("span");
+          qn.className = "inline-flex items-center text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 mr-2";
+          qn.textContent = `${it.qty || ""} ${it.unit || ""}`.trim();
+          chips.push(qn);
+        }
+
+        for (const ch of chips) line1.appendChild(ch);
+        meta.appendChild(line1);
+
+        if (it.variant) {
+          const v = document.createElement("div");
+          v.textContent = "Variante : " + it.variant;
+          meta.appendChild(v);
+        }
+
+        if (it.notes) {
+          const n = document.createElement("div");
+          n.textContent = it.notes;
+          meta.appendChild(n);
+        }
+
+        if (it.link) {
+          const a = document.createElement("a");
+          a.href = it.link;
+          a.target = "_blank";
+          a.rel = "noreferrer";
+          a.className = "text-sm text-slate-900 underline";
+          a.textContent = "Ouvrir le lien";
+          meta.appendChild(a);
+        }
+
+        left.appendChild(title);
+        left.appendChild(meta);
+
+        const right = document.createElement("div");
+        right.className = "flex flex-col gap-2 min-w-[220px]";
+
+        const assignee = (it.assignedTo || "").trim();
+        const assigneeLine = document.createElement("div");
+        assigneeLine.className = "text-sm text-slate-600";
+        assigneeLine.textContent = assignee ? `Attribué à : ${assignee}` : "Non attribué";
+        if (!t.needsAssignee) assigneeLine.textContent = "";
+        right.appendChild(assigneeLine);
+
+        const unlocked = !currentList.accessCode || isUnlocked(currentListId);
+
+        const btn = document.createElement("button");
+        btn.className = "px-3 py-2 rounded-lg bg-slate-900 text-white text-sm disabled:opacity-40";
+        btn.disabled = !unlocked;
+
+        const me = (localStorage.getItem("list.userName") || "").trim();
+
+        // Decide action based on template
+        if (currentList.type === "travel") {
+          btn.textContent = it.status === "done" ? "Marquer non fait" : "Marquer fait";
+          btn.addEventListener("click", async () => {
+            await updateDoc(doc(db, "lists", currentListId, "items", it.id), {
+              status: it.status === "done" ? "todo" : "done"
+            });
+          });
+        } else {
+          // templates with assignee
+          const isMine = assignee && me && normalize(assignee) === normalize(me);
+
+          if (!assignee) {
+            btn.textContent = t.actionLabel.take;
+            btn.addEventListener("click", async () => {
+              if (t.needsAssignee) {
+                const name = (localStorage.getItem("list.userName") || "").trim();
+                if (!name) return toast("Renseigne ton prénom (en haut) d’abord.");
+                await updateDoc(doc(db, "lists", currentListId, "items", it.id), {
+                  assignedTo: name,
+                  status: (currentList.type === "roadtrip") ? "assigned" : (currentList.type === "potluck" ? "confirmed" : "reserved")
+                });
+              }
+            });
+          } else if (isMine) {
+            // mine: can mark done/next stage or unassign
+            const btn2 = document.createElement("button");
+            btn2.className = "px-3 py-2 rounded-lg bg-white chip text-sm disabled:opacity-40";
+            btn2.disabled = !unlocked;
+            btn2.textContent = t.actionLabel.untake;
+            btn2.addEventListener("click", async () => {
+              await updateDoc(doc(db, "lists", currentListId, "items", it.id), {
+                assignedTo: "",
+                status: "todo"
+              });
+            });
+
+            btn.textContent = t.actionLabel.done;
+            btn.addEventListener("click", async () => {
+              let next = "done";
+              if (currentList.type === "roadtrip") next = "loaded";
+              if (currentList.type === "potluck") next = "brought";
+              if (currentList.type === "gifts") next = "done";
+              if (currentList.type === "groceries") next = "done";
+              await updateDoc(doc(db, "lists", currentListId, "items", it.id), { status: next });
+            });
+
+            right.appendChild(btn2);
+          } else {
+            btn.textContent = "Déjà pris";
+            btn.disabled = true;
+          }
+        }
+
+        right.appendChild(btn);
+
+        // Admin actions
+        if (isAdmin(currentListId)) {
+          const row = document.createElement("div");
+          row.className = "flex gap-2";
+
+          const del = document.createElement("button");
+          del.className = "flex-1 px-3 py-2 rounded-lg bg-white chip text-sm";
+          del.textContent = "Supprimer";
+          del.addEventListener("click", async () => {
+            if (!confirm("Supprimer cet item ?")) return;
+            await deleteDoc(doc(db, "lists", currentListId, "items", it.id));
+          });
+
+          const reset = document.createElement("button");
+          reset.className = "flex-1 px-3 py-2 rounded-lg bg-white chip text-sm";
+          reset.textContent = "Reset";
+          reset.addEventListener("click", async () => {
+            await updateDoc(doc(db, "lists", currentListId, "items", it.id), {
+              assignedTo: "",
+              status: "todo"
+            });
+          });
+
+          row.appendChild(del);
+          row.appendChild(reset);
+          right.appendChild(row);
+        }
+
+        card.appendChild(left);
+        card.appendChild(right);
+        itemsContainer.appendChild(card);
+      }
+    }
+
+    // ---- Navigation ----
+    function showHome() {
+      if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; }
+      currentListId = null;
+      currentList = null;
+      itemsCache = [];
+      setQs("list", null);
+
+      homeView.classList.remove("hidden");
+      listView.classList.add("hidden");
+      btnHome.classList.add("hidden");
+      btnShare.classList.add("hidden");
+    }
+
+    async function openList(listId) {
+      currentListId = listId;
+      setQs("list", listId);
+
+      const ref = doc(db, "lists", listId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        toast("Liste introuvable.");
+        return showHome();
+      }
+      currentList = { id: snap.id, ...snap.data() };
+
+      // Setup UI
+      homeView.classList.add("hidden");
+      listView.classList.remove("hidden");
+      btnHome.classList.remove("hidden");
+      btnShare.classList.remove("hidden");
+
+      listTitleDisplay.textContent = currentList.title || "Sans titre";
+      listMeta.textContent = "ID : " + currentListId;
+      applyTemplateUI();
+
+      userName.value = getSavedName();
+
+      const locked = !!(currentList.accessCode && currentList.accessCode.trim().length > 0);
+      if (locked && !isUnlocked(currentListId)) {
+        btnUnlock.classList.remove("hidden");
+      }
+
+      updateLockState();
+
+      // Subscribe items
+      if (unsubscribeItems) unsubscribeItems();
+      const qy = query(collection(db, "lists", listId, "items"), orderBy("createdAt", "desc"));
+      unsubscribeItems = onSnapshot(qy, (qsnap) => {
+        itemsCache = qsnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // categories filter: merge with seen categories
+        const seen = new Set((TEMPLATES[currentList.type]?.defaultCategories || []));
+        for (const it of itemsCache) if (it.category) seen.add(it.category);
+        const cats = Array.from(seen).sort((a,b)=>a.localeCompare(b));
+        const prev = categoryFilter.value;
+        categoryFilter.innerHTML = '<option value="all">Toutes catégories</option>';
+        for (const c of cats) {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          categoryFilter.appendChild(opt);
+        }
+        if ([...categoryFilter.options].some(o => o.value === prev)) categoryFilter.value = prev;
+
+        renderItems();
+      });
+    }
+
+    // ---- Buttons / actions ----
+    btnHome.addEventListener("click", showHome);
+
+    btnShare.addEventListener("click", async () => {
+      if (!currentListId) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set("list", currentListId);
+      const payload = `Lien: ${url.toString()}\nID: ${currentListId}`;
+      await copyToClipboard(payload);
+    });
+
+    btnCreate.addEventListener("click", async () => {
+      const title = listTitle.value.trim() || "Nouvelle liste";
+      const type = listType.value;
+      const aCode = accessCode.value.trim();
+      const adm = adminCode.value.trim();
+
+      if (!adm) return toast("Le code d’édition (admin) est obligatoire.");
+
+      const docRef = await addDoc(collection(db, "lists"), {
+        title,
+        type,
+        accessCode: aCode,
+        adminCode: adm,
+        createdAt: serverTimestamp()
+      });
+
+      // Unlock for creator
+      if (!aCode) setUnlocked(docRef.id, true);
+      setAdmin(docRef.id, true);
+
+      listTitle.value = "";
+      accessCode.value = "";
+      adminCode.value = "";
+
+      await openList(docRef.id);
+      toast("Liste créée.");
+    });
+
+    btnOpen.addEventListener("click", async () => {
+      const id = openListId.value.trim();
+      if (!id) return;
+      await openList(id);
+    });
+
+    btnSaveName.addEventListener("click", () => {
+      const n = userName.value.trim();
+      localStorage.setItem("list.userName", n);
+      toast("Nom enregistré.");
+      renderItems();
+    });
+
+    btnUnlock.addEventListener("click", () => {
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-3";
+
+      const p = document.createElement("p");
+      p.className = "text-sm text-slate-700";
+      p.textContent = "Cette liste est protégée. Entre le code d’accès pour l’ouvrir.";
+      wrap.appendChild(p);
+
+      const inp = document.createElement("input");
+      inp.className = "w-full px-3 py-2 rounded-lg border border-slate-200";
+      inp.placeholder = "Code d’accès";
+      inp.type = "password";
+      wrap.appendChild(inp);
+
+      const row = document.createElement("div");
+      row.className = "flex gap-2 justify-end";
+
+      const cancel = document.createElement("button");
+      cancel.className = "px-3 py-2 rounded-lg bg-white chip";
+      cancel.textContent = "Annuler";
+      cancel.addEventListener("click", closeModal);
+
+      const ok = document.createElement("button");
+      ok.className = "px-3 py-2 rounded-lg bg-slate-900 text-white";
+      ok.textContent = "Déverrouiller";
+      ok.addEventListener("click", () => {
+        if ((inp.value || "").trim() === (currentList.accessCode || "").trim()) {
+          setUnlocked(currentListId, true);
+          closeModal();
+          updateLockState();
+          toast("Liste déverrouillée.");
+        } else {
+          toast("Code incorrect.");
+        }
+      });
+
+      row.appendChild(cancel);
+      row.appendChild(ok);
+      wrap.appendChild(row);
+
+      openModal("Code d’accès", wrap);
+    });
+
+    btnAdmin.addEventListener("click", () => {
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-3";
+
+      const isOn = isAdmin(currentListId);
+      const p = document.createElement("p");
+      p.className = "text-sm text-slate-700";
+      p.textContent = isOn
+        ? "Le mode édition est actif sur cet appareil. Tu peux le désactiver."
+        : "Entre le code d’édition (admin) pour activer le mode édition.";
+      wrap.appendChild(p);
+
+      if (isOn) {
+        const row = document.createElement("div");
+        row.className = "flex gap-2 justify-end";
+        const off = document.createElement("button");
+        off.className = "px-3 py-2 rounded-lg bg-white chip";
+        off.textContent = "Désactiver";
+        off.addEventListener("click", () => {
+          setAdmin(currentListId, false);
+          adminPanel.classList.add("hidden");
+          closeModal();
+          toast("Mode édition désactivé.");
+          renderItems();
+        });
+        row.appendChild(off);
+        wrap.appendChild(row);
+        openModal("Mode édition", wrap);
+        return;
+      }
+
+      const inp = document.createElement("input");
+      inp.className = "w-full px-3 py-2 rounded-lg border border-slate-200";
+      inp.placeholder = "Code admin";
+      inp.type = "password";
+      wrap.appendChild(inp);
+
+      const row = document.createElement("div");
+      row.className = "flex gap-2 justify-end";
+
+      const cancel = document.createElement("button");
+      cancel.className = "px-3 py-2 rounded-lg bg-white chip";
+      cancel.textContent = "Annuler";
+      cancel.addEventListener("click", closeModal);
+
+      const ok = document.createElement("button");
+      ok.className = "px-3 py-2 rounded-lg bg-slate-900 text-white";
+      ok.textContent = "Activer";
+      ok.addEventListener("click", () => {
+        if ((inp.value || "").trim() === (currentList.adminCode || "").trim()) {
+          setAdmin(currentListId, true);
+          closeModal();
+          updateLockState();
+          toast("Mode édition activé.");
+          renderItems();
+        } else {
+          toast("Code incorrect.");
+        }
+      });
+
+      row.appendChild(cancel);
+      row.appendChild(ok);
+      wrap.appendChild(row);
+
+      openModal("Mode édition", wrap);
+    });
+
+    itemForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentListId) return;
+
+      // Respect lock
+      const locked = !!(currentList.accessCode && currentList.accessCode.trim().length > 0);
+      if (locked && !isUnlocked(currentListId)) return toast("Liste verrouillée.");
+
+      if (!isAdmin(currentListId)) return toast("Mode édition requis.");
+
+      const t = TEMPLATES[currentList.type] || TEMPLATES.gifts;
+
+      const payload = {
+        title: itemTitle.value.trim(),
+        notes: itemNotes.value.trim(),
+        category: itemCategory.value.trim(),
+        link: itemLink.value.trim(),
+        variant: t.showVariant ? itemVariant.value.trim() : "",
+        qty: t.showQty ? (itemQty.value ? Number(itemQty.value) : null) : null,
+        unit: t.showQty ? itemUnit.value.trim() : "",
+        assignedTo: "",
+        status: "todo",
+        createdAt: serverTimestamp()
+      };
+
+      // Default status for gifts
+      if (currentList.type === "gifts") payload.status = "available";
+
+      await addDoc(collection(db, "lists", currentListId, "items"), payload);
+
+      itemTitle.value = "";
+      itemNotes.value = "";
+      itemCategory.value = "";
+      itemLink.value = "";
+      itemVariant.value = "";
+      itemQty.value = "";
+      itemUnit.value = "";
+
+      toast("Item ajouté.");
+    });
+
+    btnAddBulk.addEventListener("click", () => {
+      if (!isAdmin(currentListId)) return toast("Mode édition requis.");
+
+      const wrap = document.createElement("div");
+      wrap.className = "space-y-3";
+
+      const p = document.createElement("p");
+      p.className = "text-sm text-slate-700";
+      p.textContent = "Colle une liste (1 ligne = 1 item).";
+      wrap.appendChild(p);
+
+      const ta = document.createElement("textarea");
+      ta.rows = 8;
+      ta.className = "w-full px-3 py-2 rounded-lg border border-slate-200 font-mono text-sm";
+      ta.placeholder = "Ex :\nBouteilles d’eau\nGlaçons\nPain\n…";
+      wrap.appendChild(ta);
+
+      const row = document.createElement("div");
+      row.className = "flex gap-2 justify-end";
+
+      const cancel = document.createElement("button");
+      cancel.className = "px-3 py-2 rounded-lg bg-white chip";
+      cancel.textContent = "Annuler";
+      cancel.addEventListener("click", closeModal);
+
+      const ok = document.createElement("button");
+      ok.className = "px-3 py-2 rounded-lg bg-slate-900 text-white";
+      ok.textContent = "Ajouter";
+      ok.addEventListener("click", async () => {
+        const lines = ta.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        if (lines.length === 0) return;
+
+        const t = TEMPLATES[currentList.type] || TEMPLATES.gifts;
+        const baseStatus = (currentList.type === "gifts") ? "available" : "todo";
+
+        for (const line of lines) {
+          await addDoc(collection(db, "lists", currentListId, "items"), {
+            title: line,
+            notes: "",
+            category: "",
+            link: "",
+            variant: "",
+            qty: t.showQty ? 1 : null,
+            unit: "",
+            assignedTo: "",
+            status: baseStatus,
+            createdAt: serverTimestamp()
+          });
+        }
+        closeModal();
+        toast(lines.length + " item(s) ajoutés.");
+      });
+
+      row.appendChild(cancel);
+      row.appendChild(ok);
+      wrap.appendChild(row);
+
+      openModal("Ajout en masse", wrap);
+    });
+
+    // Filters re-render
+    [searchInput, statusFilter, categoryFilter].forEach(el => el.addEventListener("input", renderItems));
+
+    // Initial load
+    window.addEventListener("load", async () => {
+      const listId = qs("list");
+      if (listId) {
+        btnHome.classList.remove("hidden");
+        btnShare.classList.remove("hidden");
+        await openList(listId);
+      } else {
+        showHome();
+      }
+    });
+  </script>
+</body>
+</html>
